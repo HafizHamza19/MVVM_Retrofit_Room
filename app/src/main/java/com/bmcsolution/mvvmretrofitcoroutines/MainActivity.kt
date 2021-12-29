@@ -11,6 +11,7 @@ import androidx.lifecycle.ViewModelProvider
 import com.bmcsolution.mvvmretrofitcoroutines.AlarmManager.AlarmService
 import com.bmcsolution.mvvmretrofitcoroutines.ViewModel.MainViewModel
 import com.bmcsolution.mvvmretrofitcoroutines.ViewModel.MainViewModelFactory
+import com.bmcsolution.mvvmretrofitcoroutines.sealedAndEnumClass.ResponseGeneric
 
 
 class MainActivity : AppCompatActivity() {
@@ -28,8 +29,26 @@ class MainActivity : AppCompatActivity() {
             MainViewModel::class.java
         )
         mainViewModel.quotes.observe(this, Observer {
-            qoutesTxt.text = it.results.toString()
-            Log.d("Tag", it.results.toString())
+            when (it) {
+                is ResponseGeneric.Error -> {
+                    qoutesTxt.text = it.errorMessage.toString()
+                }
+                is ResponseGeneric.Loading -> {
+
+                    Log.d("TagLoading", "Loading")
+                }
+                is ResponseGeneric.Success -> {
+                    it.data?.let {
+                        qoutesTxt.text = it.results.toString()
+                        Log.d("Tag", it.results.toString())
+                    }
+
+                }
+            }
+
+
+
+
         })
 
         var next=0
@@ -39,7 +58,22 @@ class MainActivity : AppCompatActivity() {
                 MainViewModel::class.java
             )
             mainViewModel.quotes.observe(this, Observer {
-                qoutesTxt.text = it.results.toString()
+                when (it) {
+                    is ResponseGeneric.Error -> {
+                        qoutesTxt.text = it.errorMessage.toString()
+                    }
+                    is ResponseGeneric.Loading -> {
+
+
+                    }
+                    is ResponseGeneric.Success -> {
+                        it.data?.let {
+                            qoutesTxt.text = it.results.toString()
+                            Log.d("Tag", it.results.toString())
+                        }
+
+                    }
+                }
             })
         }
     }

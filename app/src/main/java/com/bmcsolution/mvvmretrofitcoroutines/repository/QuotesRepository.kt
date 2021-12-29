@@ -9,6 +9,7 @@ import com.bmcsolution.mvvmretrofitcoroutines.apiClient.ApiHelper
 import com.bmcsolution.mvvmretrofitcoroutines.apiClient.ApiInterface
 import com.bmcsolution.mvvmretrofitcoroutines.models.QuotesResponse
 import com.bmcsolution.mvvmretrofitcoroutines.roomDb.RoomDb
+import com.bmcsolution.mvvmretrofitcoroutines.sealedAndEnumClass.ResponseGeneric
 import com.bmcsolution.mvvmretrofitcoroutines.utils.NetworkUtils
 import kotlin.random.Random
 
@@ -18,32 +19,38 @@ class QuotesRepository(
     private val applicationContext: Context
 ) {
 
-    var quotesMutableData = MutableLiveData<QuotesResponse>()
+    var quotesMutableData = MutableLiveData<ResponseGeneric<QuotesResponse>>()
 
-    val quotesLiveData: LiveData<QuotesResponse> get() = quotesMutableData
+    val quotesLiveData: LiveData<ResponseGeneric<QuotesResponse>> get() = quotesMutableData
 
     suspend fun getQuotes(page: Int) {
 
         try {
             if (NetworkUtils.isInternetAvailable() && NetworkUtils.isNetworkAvailable(applicationContext))
             {
+                quotesMutableData.postValue(ResponseGeneric.Loading())
                 val result = apiService.getQuotes(pageNo = page)
                 if (result.isSuccessful && result?.body() != null)
                 {
                     roomDb.roomDao().deleteQuotes()
                     roomDb.roomDao().insertQuotes(result.body()!!.results)
-                    quotesMutableData.postValue(result.body())
+                    quotesMutableData.postValue(ResponseGeneric.Success(result.body()))
+                }
+                else
+                {
+                    quotesMutableData.postValue(ResponseGeneric.Error("API Error"))
                 }
             }
             else
             {
                 val quotesData = roomDb.roomDao().getQuotes()
                 val quotesResponse = QuotesResponse(1, 1, 1, quotesData, 1, 1)
-                quotesMutableData.postValue(quotesResponse)
+                quotesMutableData.postValue(ResponseGeneric.Success(quotesResponse))
             }
         }
         catch (e: Exception)
         {
+            quotesMutableData.postValue(ResponseGeneric.Error(e.message.toString()))
             Log.d("Exception", e.message.toString())
         }
     }
@@ -57,7 +64,7 @@ class QuotesRepository(
         {
             //roomDb.roomDao().deleteQuotes()
             roomDb.roomDao().insertQuotes(result.body()!!.results)
-            quotesMutableData.postValue(result.body())
+            quotesMutableData.postValue(ResponseGeneric.Success(result.body()))
         }
     }
 
