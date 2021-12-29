@@ -12,6 +12,9 @@ import com.bmcsolution.mvvmretrofitcoroutines.AlarmManager.AlarmService
 import com.bmcsolution.mvvmretrofitcoroutines.ViewModel.MainViewModel
 import com.bmcsolution.mvvmretrofitcoroutines.ViewModel.MainViewModelFactory
 import com.bmcsolution.mvvmretrofitcoroutines.sealedAndEnumClass.ResponseGeneric
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 
 class MainActivity : AppCompatActivity() {
@@ -25,9 +28,11 @@ class MainActivity : AppCompatActivity() {
 
         val repository = (application as ApplicationClass).repository
 
-        mainViewModel = ViewModelProvider(this, MainViewModelFactory(repository, 1)).get(
-            MainViewModel::class.java
-        )
+
+            mainViewModel = ViewModelProvider(this, MainViewModelFactory(repository, 1)).get(
+                MainViewModel::class.java
+            )
+
         mainViewModel.quotes.observe(this, Observer {
             when (it) {
                 is ResponseGeneric.Error -> {
@@ -36,6 +41,7 @@ class MainActivity : AppCompatActivity() {
                 is ResponseGeneric.Loading -> {
 
                     Log.d("TagLoading", "Loading")
+                    qoutesTxt.text="Loading"
                 }
                 is ResponseGeneric.Success -> {
                     it.data?.let {
@@ -48,33 +54,13 @@ class MainActivity : AppCompatActivity() {
 
 
 
-
         })
-
         var next=0
         nextButton.setOnClickListener {
             next++
-            mainViewModel = ViewModelProvider(this, MainViewModelFactory(repository, next)).get(
-                MainViewModel::class.java
-            )
-            mainViewModel.quotes.observe(this, Observer {
-                when (it) {
-                    is ResponseGeneric.Error -> {
-                        qoutesTxt.text = it.errorMessage.toString()
-                    }
-                    is ResponseGeneric.Loading -> {
-
-
-                    }
-                    is ResponseGeneric.Success -> {
-                        it.data?.let {
-                            qoutesTxt.text = it.results.toString()
-                            Log.d("Tag", it.results.toString())
-                        }
-
-                    }
-                }
-            })
+            CoroutineScope(Dispatchers.IO).launch {
+                repository.getQuotesInBackground(next)
+            }
         }
     }
 }

@@ -18,4 +18,5 @@ class MainViewModel(private val repository: QuotesRepository,private val pageNo:
         }
     }
     val quotes:LiveData<ResponseGeneric<QuotesResponse>>get() = repository.quotesLiveData
+
 }
