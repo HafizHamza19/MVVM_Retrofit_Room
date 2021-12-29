@@ -55,12 +55,10 @@ class MainActivity : AppCompatActivity() {
 
 
         })
-        var next=0
+        var next=1
         nextButton.setOnClickListener {
             next++
-            CoroutineScope(Dispatchers.IO).launch {
-                repository.getQuotesInBackground(next)
-            }
+           mainViewModel.nextPage(next)
         }
     }
 }

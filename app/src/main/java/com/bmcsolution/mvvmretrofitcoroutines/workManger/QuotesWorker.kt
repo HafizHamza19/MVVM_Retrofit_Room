@@ -14,7 +14,8 @@ class QuotesWorker(private val context: Context,private val params:WorkerParamet
         Log.d("WorkMangerTag","Work Start")
         val repository=(context as ApplicationClass).repository
         CoroutineScope(Dispatchers.IO).launch {
-            repository.getQuotesInBackground(1)
+            val random= (Math.random()*10).toInt()
+            repository.getQuotesInBackground(random)
         }
         Log.d("WorkMangerTag","Work Start")
 

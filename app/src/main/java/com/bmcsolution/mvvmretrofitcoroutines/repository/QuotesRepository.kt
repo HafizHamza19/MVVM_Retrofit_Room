@@ -58,7 +58,6 @@ class QuotesRepository(
 
     suspend fun getQuotesInBackground(page:Int)
     {
-        val random= (Math.random()*10).toInt()
         val result = apiService.getQuotes(pageNo = page)
         if (result.isSuccessful && result?.body() != null)
         {

@@ -17,6 +17,14 @@ class MainViewModel(private val repository: QuotesRepository,private val pageNo:
             repository.getQuotes(page = pageNo)
         }
     }
+
+    fun nextPage(pageNo:Int)
+    {
+        viewModelScope.launch(Dispatchers.IO)
+        {
+            repository.getQuotes(page = pageNo)
+        }
+    }
     val quotes:LiveData<ResponseGeneric<QuotesResponse>>get() = repository.quotesLiveData
 
 }
